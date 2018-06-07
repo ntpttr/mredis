@@ -16,7 +16,6 @@ class MRedis:
         mr = mredis.MRedis(servers)
         """
 
-        self.pool = redis.ConnectionPool()
         self.servers = []
 
         if hash_method not in ['standard']:
@@ -28,8 +27,7 @@ class MRedis:
 
             self.servers.append(redis.Redis(host=server['host'],
                                             port=server['port'],
-                                            db=server['db'],
-                                            connection_pool=self.pool))
+                                            db=server['db']))
 
     ### MRedis Specific Parts ###
     def get_node_offset(self, key):
@@ -43,8 +41,13 @@ class MRedis:
 
     def get_server_key(self, server):
         "Return a string of server:port:db"
+        conn = server.connection_pool.connection_kwargs
 
-        return "%s:%i:%i" % (server.host, server.port, server.db)
+        host = conn['host']
+        port = conn['port']
+        db = conn['db']
+
+        return "%s:%i:%i" % (host, port, db)
 
     #### SERVER INFORMATION ####
     def bgrewriteaof(self):
